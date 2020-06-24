@@ -5,3 +5,5 @@ phases:
       docker: 18
     commands:
       - pip install boto3
+      - chmod +x ./deploy.sh
+      - ./deploy.sh
