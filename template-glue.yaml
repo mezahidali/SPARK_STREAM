@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+#Transform: "AWS::Serverless-2016-10-31"
+#Description: "Glue job to be created by the common stack"
+
+Parameters:
+  pEnvironment:
+    Description: "Environment name."
+    Type: String
+    Default: "dev"
+    AllowedValues: ["dev", "test", "prod"]
+  PGEJobName:
+    Type: String
+    Default: TestGlueStackJob
+  # PGETriggerName:
+  #   Type: String
+  #   Default: raptors-session-data-job-trigger
+  PGEConnectionName:
+    Type: String
+    Default: TestPostGres
+    Description: Provide connection name otherwise default value will be selected
+  PGEScriptLocation:
+    Type: String
+    Default: aws-zhidli/GlueScript/Postgres-ETL
+    Description: "location of the glue script file, you dont need to append \"s3://\". CloudFormation template will do it."
+  PGEJobBookmark:
+    Type: String
+    Default: False
+    Description: "Select option to enable/disable Job bookmark"
+    AllowedValues: [true,false]
+    ConstraintDescription: must specify True or False.
+  GlueSecurityConfig:
+    Type: String
+    Default: TestSecurityConfig
+    Description: "Security configuration for data encryption at rest"
+
+Conditions:
+  UseJobBookmark: !Equals [!Ref PGEJobBookmark, False]
+
+
+# Resources section defines metadata for the Data Catalog
+Resources:
+#Create IAM Role
+  PGEGlueJobIAMRoleName:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "glue.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: !Join [ '-', ["AWSGlue", !Ref PGEJobName, "policy"] ]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # -
+              #   Effect: "Allow"
+              #   Action: "s3:*"
+              #   Resource: [
+              #       "Fn::Join": ["", ["arn:aws:s3:::", !Ref CFNOutputDirectoryLocation,"*"] ]
+              #     ]
+              -
+                Effect: "Allow"
+                Action: "s3:GetObject"
+                Resource: [
+                    "Fn::Join": ["", ["arn:aws:s3:::", !Ref PGEScriptLocation,"*"] ]
+                  ]
+              # -
+              #   Effect: "Allow"
+              #   Action: "s3:GetObject"
+              #   Resource: [
+              #       "Fn::Join": ["", ["arn:aws:s3:::", !Ref CFNInputDirectoryLocation,"*"] ]
+              #     ]
+      ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+# The script already exists and is called by this job
+  PGEJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Role: !Ref PGEGlueJobIAMRoleName
+      Connections:
+        Connections:
+          - !Ref PGEConnectionName
+      Description: Job created with CloudFormation
+      GlueVersion: "1.0"
+      Command:
+        Name: glueetl
+        ScriptLocation: !Join [ '', ["s3://", !Ref PGEScriptLocation]]
+             # for access to directories use proper IAM role with permission to buckets and folders that begin with "aws-glue-"
+             # script uses temp directory from job definition if required (temp directory not used S3 to S3)
+             # script defines target for output as s3://aws-glue-target/sal
+        PythonVersion: "3"
+      DefaultArguments:
+        "--job-bookmark-option": !If [UseJobBookmark, "job-bookmark-enable", "job-bookmark-disable"]
+        "--aws_account_id": !Ref AWS::AccountId
+      #      "--DESTINATION_PATH": !Join [ '', ["s3://", !Ref CFNOutputDirectoryLocation] ]
+      #      "--INPUT_DATABASE": !Ref CFNDatabaseName
+      #      "--INPUT_TABLE": !Ref CFNTableName
+      #      "--REPORT_DATE": " "
+      AllocatedCapacity: 5
+      ExecutionProperty:
+        MaxConcurrentRuns: 1
+      Name: !Ref PGEJobName
+      SecurityConfiguration: !Ref GlueSecurityConfig
+      # Create trigger to run an existing job (CFNJobName) on a cron schedule.
+  # CFNTrigger:
+  #   Type: AWS::Glue::Trigger
+  #   Properties:
+  #     Name:
+  #       Ref: PGETriggerName
+  #     Description: Trigger created with CloudFormation
+  #     Type: SCHEDULED
+  #     Actions:
+  #       - JobName: !Ref CFNJob
+  #       # Arguments: JSON object
+  #     StartOnCreation: true
+  #     Schedule: cron(30 06 * * ? *)
+  #     #Predicate:
