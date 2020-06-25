@@ -25,11 +25,13 @@ set -ex
 chmod +x ./deploy_glue.sh
 ./deploy_glue.sh
 
-if [ "$?" -eq 255 ]
-then
-    echo "No changes to deploy."
-    exit 0
-fi
+ERROR_CODE=$?
+
+echo ${STDERR} 1>&2
+echo $ERROR_CODE
+
+if [[ "${ERROR_CODE}" eq "255" ]]; then exit 0; fi
+
 set +ex
 
 #source /tmp/orig
