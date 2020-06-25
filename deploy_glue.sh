@@ -47,10 +47,11 @@ else
   aws cloudformation wait stack-update-complete \
     --stack-name $STACK_NAME
 
-  STDERR=$(( aws cloudformation "$@" ) 2>&1)
-  ERROR_CODE=$?
-  echo ${STDERR} 1>&2
-  if [[ "${ERROR_CODE}" -eq "255" && "${STDERR}" =~ "No changes to deploy" ]]; then exit 0; fi
+  if [ "$?" -eq 255 ]
+  then
+      echo "No changes to deploy."
+      exit 0
+  fi
 
   echo "Finished create/update successfully!"
 fi
