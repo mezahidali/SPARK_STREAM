@@ -38,9 +38,6 @@ else
     if [[ $update_output == *"ValidationError"* && $update_output == *"No updates"* ]] ; then
       echo -e "\nFinished create/update - no updates to be performed";
       exit 0;
-    elif [[ $update_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
-      echo -e "\nFinished create/update - no changes to be performed";
-      exit 0;
     else
       exit $status;
     fi
@@ -49,16 +46,17 @@ else
   echo "Waiting for stack update to complete ..."
   wait_output=$(aws cloudformation wait stack-update-complete \
     --stack-name $STACK_NAME 2>&1)
-    
+
   wait_status=$?
   set -e
   echo "$wait_status"
 
   if [ $wait_status -ne 0 ] ; then
     # Don't fail for no-op update
-    if [[ $update_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
+    if [[ $wait_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
       echo -e "\nFinished create/update - no changes to be performed";
       exit 0;
+    fi
   fi
 
   echo "Finished create/update successfully!"
