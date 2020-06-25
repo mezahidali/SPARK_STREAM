@@ -25,6 +25,7 @@ else
   update_output=$(aws cloudformation deploy \
     --stack-name $STACK_NAME \
     --template-file $DIRNAME/output/packaged-template.yaml \
+    --no-fail-on-empty-changeset \
     --tags "whlau:governance:project"="daas" "whlau:governance:company"="WHLAU" "whlau:governance:department"="IT Service" \
     --capabilities "CAPABILITY_NAMED_IAM" "CAPABILITY_IAM" "CAPABILITY_AUTO_EXPAND" 2>&1)
 

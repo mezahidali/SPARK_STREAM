@@ -25,14 +25,7 @@ set -ex
 chmod +x ./deploy_glue.sh
 ./deploy_glue.sh
 
-ERROR_CODE=$?
 
-echo "Before read"
-STDERR=$(( aws cloudformation "$@" ) 2>&1)
-echo ${STDERR} 1>&2
-echo $ERROR_CODE
-echo "After Read"
-if [[ "${ERROR_CODE}" eq "255" ]]; then exit 0; fi
 
 set +ex
 
