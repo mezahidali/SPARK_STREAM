@@ -4,6 +4,7 @@ env | grep AWS_SESSION_TOKEN > /tmp/orig
 env | grep AWS_ACCESS_KEY_ID >> /tmp/orig
 env | grep AWS_SECRET_ACCESS_KEY >> /tmp/orig
 
+echo -n orig creds are; cat /tmp/orig
 #Set variable for AWS Account IDs. Currently set to DaaS Access Accounts for testing purposes
 DatalakeDev="315785799772"
 DatalakeUAT="435298438412"
@@ -21,6 +22,7 @@ source /tmp/creds
 #Deploy Dev Datalake Account Common Cloudformation Resources Account
 set -ex
 
+chmod +x ./deploy_glue.sh
 ./deploy_glue.sh
 
 set +ex
