@@ -44,25 +44,13 @@ else
   fi
 
   echo "Waiting for stack update to complete ..."
-  wait_output=$(aws cloudformation wait stack-update-complete \
-    --stack-name $STACK_NAME 2>&1)
+  aws cloudformation wait stack-update-complete \
+    --stack-name $STACK_NAME
 
-  wait_status=$?
-  set -e
-  echo "$wait_status"
-
-  if [ $wait_status -ne 0 ] ; then
-    # Don't fail for no-op update
-    if [[ $wait_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
-      echo -e "\nFinished create/update - no changes to be performed";
-      exit 0;
-    fi
-  fi
-  echo "$update_output"
-  if [[ $update_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
-      echo -e "\nFinished create/update - no changes to be performed";
-      exit 0;
-  fi
+  STDERR=$(( aws cloudformation "$@" ) 2>&1)
+  ERROR_CODE=$?
+  echo ${STDERR} 1>&2
+  if [[ "${ERROR_CODE}" -eq "255" && "${STDERR}" =~ "No changes to deploy" ]]; then exit 0; fi
 
   echo "Finished create/update successfully!"
 fi
