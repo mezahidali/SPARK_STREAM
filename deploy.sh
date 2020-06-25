@@ -25,6 +25,11 @@ set -ex
 chmod +x ./deploy_glue.sh
 ./deploy_glue.sh
 
+if [ "$?" -eq 255 ]
+then
+    echo "No changes to deploy."
+    exit 0
+fi
 set +ex
 
 #source /tmp/orig
