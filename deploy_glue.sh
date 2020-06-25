@@ -45,14 +45,14 @@ else
   fi
 
   echo "Waiting for stack update to complete ..."
+  if [[ $update_output == *"No changes to deploy"* ]]: then
+    echo "No changes to implement";
+    exit 0;
+  fi
+  
   aws cloudformation wait stack-update-complete \
     --stack-name $STACK_NAME
 
-  if [ "$?" -eq 255 ]
-  then
-      echo "No changes to deploy."
-      exit 0
-  fi
 
   echo "Finished create/update successfully!"
 fi
