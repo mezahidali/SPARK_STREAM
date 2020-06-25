@@ -58,8 +58,8 @@ else
       exit 0;
     fi
   fi
-
-  if [[ $update_output == "No changes to deploy. Stack glue-test is up to date" ]] ; then
+  echo "$update_output"
+  if [[ $update_output == *"No changes to deploy. Stack glue-test is up to date"* ]] ; then
       echo -e "\nFinished create/update - no changes to be performed";
       exit 0;
   fi
