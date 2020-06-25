@@ -21,9 +21,7 @@ source /tmp/creds
 #Deploy Dev Datalake Account Common Cloudformation Resources Account
 set -ex
 
-../team-pipelines/deploy.sh -n $stack_prefix -s "whlau-daas-dev-$DatalakeDev-cfn" -e $Environment -t $TeamName -p $PipLibrary -d $DlakeLibrary
-
-./deploy.sh -n "$stack_prefix-$PipelineName" -s "whlau-daas-dev-$DatalakeDev-cfn" -e $Environment -b $PreStage  -f $PostStage -x $SnapshotStage -a $StageARepo -c $StageBRepo -y $StageCRepo -t $TeamName -u $PipelineName
+./deploy_glue.sh
 
 set +ex
 
