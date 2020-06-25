@@ -27,10 +27,5 @@ chmod +x ./deploy_glue.sh
 
 set +ex
 
-source /tmp/orig
-
-
+#source /tmp/orig
 #sh ./deploy_glue.sh
-
-
-  
