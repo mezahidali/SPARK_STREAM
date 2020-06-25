@@ -38,6 +38,9 @@ else
     if [[ $update_output == *"ValidationError"* && $update_output == *"No updates"* ]] ; then
       echo -e "\nFinished create/update - no updates to be performed";
       exit 0;
+    elif [[ $update_output == *"ValidationError"* && $update_output == *"No changes"* ]] ; then
+      echo -e "\nFinished create/update - no changes to be performed";
+      exit 0;
     else
       exit $status;
     fi
